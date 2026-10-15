@@ -8,9 +8,10 @@ This is a project rebuild of my first portfolio - which contains HTML, CSS and J
 
 ## Technologies
 
+HTML
+CSS
 Javascript
 React
-HTML
 
 ## Getting Started
 
@@ -21,22 +22,31 @@ Git– [Download Git](https://git-scm.com/)
 
 Verify your installations by running:
 
-bash
+```bash
 node -v
 npm -v
+```
 
 ## Follow these steps to setup and run the project locally
 
-Clone the repository - git clone https://github.com/ahashimbala/Portfolio-react.git
+Clone the repository -
+
+```bash
+git clone https://github.com/ahashimbala/Portfolio-react.git
 cd Portfolio-react
+```
 
 ## Install all required package dependencies
 
+```bash
 npm install
+```
 
 ## Run the local development server with hot reload enabled
 
+```bash
 npm run dev
+```
 
 Once started, open your browser and navigate to http://localhost:5173 (or the local URL shown in your terminal).
 
