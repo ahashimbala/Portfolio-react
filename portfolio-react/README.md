@@ -4,7 +4,7 @@ Portfolio-react
 
 ## Overview
 
-This is a project rebuild of my first portfolio - which contains HTML, CSS and Javascript. It is the starting point of my AI Intermediate Frontend Curriculum at FlexiSAF EduSoft Limited.
+This is a project rebuild of my first portfolio - which contains HTML, CSS and Javascript. It is also the starting point of my AI Intermediate Frontend Curriculum at FlexiSAF EduSoft Limited.
 
 ## Technologies
 
