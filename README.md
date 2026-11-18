@@ -85,6 +85,14 @@ node -v
 npm -v
 ```
 
+## AI Design-to-Code Evaluation
+
+AI helped break down the reference design into smaller, reusable React components, making implementation more structured.
+
+However, I had to guide the project architecture by requesting that each component's JSX and CSS files be grouped into the same folder. I chose this structure to improve debugging, code navigation, and maintainability.
+
+**Key takeaway:** AI can accelerate frontend development, but human judgment remains important when making architectural and maintainability decisions.
+
 ## Installation
 
 Clone the repository:
