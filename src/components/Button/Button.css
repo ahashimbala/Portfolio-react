@@ -1,0 +1,50 @@
+.button {
+    padding: var(--space-3) var(--space-5);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    transition: background-color 0.2s ease, ;
+}
+
+
+/* Primary button */
+
+.button-primary {
+    background-color: var(--button-primary-bg);
+    color: var(--button-primary-text);
+}
+
+.button-primary:hover {
+    opacity: 0.85;
+}
+
+
+/* Secondary button */
+
+.button-secondary {
+    background-color: transparent;
+    color: var(--text-h);
+    border-color: var(--border);
+}
+
+.button-secondary:hover {
+    background-color: var(--bg);
+}
+
+
+/* Keyboard focus */
+
+.button:focus-visible {
+    outline: 2px solid var(--button-primary-bg);
+    outline-offset: 3px;
+}
+
+
+/* Disabled state */
+
+.button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

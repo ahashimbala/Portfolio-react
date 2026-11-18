@@ -1,0 +1,38 @@
+.feedback {
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
+    margin-bottom: var(--space-3);
+}
+
+/* Success */
+.feedback-success {
+    color: #166534;
+    background-color: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+/* Error */
+.feedback-error {
+    color: #991b1b;
+    background-color: #fef2f2;
+    border-color: #fecaca;
+}
+
+/* Warning */
+.feeback-warning {
+    color: #92400e;
+    background-color: #fffbeb;
+    border-color: #fde68a;
+}
+
+/* Information */
+.feedback-info {
+    color: #1e40af;
+    background-color: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+
