@@ -1,20 +1,12 @@
 import "./ProjectCard.css";
 
-const ProjectCard = ({ title, description, technologies, link }) => {
-  return (
-    <article>
-      <h2>{title}</h2>
+const ProjectCard = ({ title, description, technologies, link }) => (
+  <article className="project-card">
+    <h2>{title}</h2>
+    <p>{description}</p>
+    <div className="project-technologies">{technologies.map((technology) => <span key={technology}>{technology}</span>)}</div>
+    <a className="project-link" href={link} target="_blank" rel="noreferrer">View project ↗</a>
+  </article>
+);
 
-      <p>{description}</p>
-
-      <div className="project-technologies">
-        {technologies.map((technology, index) => (
-            <span key={index}>{technology}</span>
-        ))}
-      </div>
-      <a href={link} target="_blank"></a>
-    </article>
-  )
-}
-
-export default ProjectCard
+export default ProjectCard;

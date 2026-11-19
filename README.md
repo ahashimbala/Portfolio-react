@@ -138,3 +138,10 @@ View the deployed portfolio:
 ## Repository
 
 [GitHub Repository](https://github.com/ahashimbala/Portfolio-react)
+## Curriculum Modules 3–5
+
+- **Module 3:** Projects search and technology filters with derived results, plus a reducer-managed contact form with validation and reset.
+- **Module 4:** Public GitHub repositories are fetched asynchronously with loading, empty, error, retry, and request cleanup behavior.
+- **Module 5:** AI-assisted review and verification notes are in [`docs/week3-5-evidence.md`](docs/week3-5-evidence.md).
+
+See the evidence document for the state-flow diagram, API assumptions, prompt comparison exercise, and verification checklist.

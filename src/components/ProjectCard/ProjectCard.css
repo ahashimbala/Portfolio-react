@@ -1,0 +1,2 @@
+.project-card,.repo-card{border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;text-align:left;display:flex;flex-direction:column;gap:14px;background:var(--bg)}
+.project-card h2{margin:0}.project-card p,.repo-card p{color:var(--text);line-height:1.6}.project-technologies{display:flex;flex-wrap:wrap;gap:8px}.project-technologies span{border:1px solid var(--border);border-radius:999px;padding:4px 10px;font-size:13px}.project-link{color:var(--text-h);font-weight:600;margin-top:auto}
