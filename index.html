@@ -1,13 +1,23 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>portfolio-react</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Abdullahi Hashim Bala - Full Stack Web Developer & Software Engineer</title>
+  <meta name="description" content="Portfolio of Abdullahi Hashim Bala, Software Engineering student and Full Stack Web Developer." />
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark');
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class', theme: { extend: { colors: { amber: { 300:'#D9C2A7',400:'#C5A88A',500:'#AD8D6D',600:'#967859',700:'#8C6E50',800:'#6E553D' }, beige: {300:'#AD8D6D',800:'#1E1E1C',900:'#111110',950:'#080807'}, darkbg:'#080807',darkcard:'#111110',darkborder:'#1E1E1C' }, fontFamily: { sans:['Outfit','sans-serif'], serif:['Ovo','serif'], mono:['JetBrains Mono','Fira Code','monospace'] } } };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&family=Ovo&display=swap" rel="stylesheet" />
+</head>
+<body class="overflow-x-hidden font-sans leading-relaxed bg-white text-zinc-900 dark:bg-beige-950 dark:text-stone-100 transition-colors duration-300 min-h-screen selection:bg-amber-800 selection:text-white">
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
 </html>

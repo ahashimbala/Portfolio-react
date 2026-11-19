@@ -1,20 +1,133 @@
-import { Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import Projects from "./pages/Projects";
-import Contact from "./pages/Contact";
-import Navbar from "./components/Navbar/Navbar";
+import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 
-const App = () => {
-  return (
-    <div>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/contact" element={<Contact />} />
-      </Routes>
-    </div>
-  );
+const projects = [
+  { id: 'elevoni', title: 'Elevoni Farms', subtitle: 'Catfish Marketplace & Agriculture Platform', category: 'fullstack', label: 'Full Stack', image: '/images/work-2.png', description: 'An agriculture technology platform focused on making catfish easier to discover, understand, and purchase online. Elevoni connects digital commerce with real agricultural supply and is being developed as the foundation for a broader agricultural technology platform.', tech: ['JavaScript', 'Node.js', 'Express.js', 'MongoDB', 'Tailwind CSS'], demo: 'https://elevonifarms.vercel.app/' },
+  { id: 'quickstay', title: 'QuickStay', subtitle: 'Hotel Booking & Accommodation Platform', category: 'webapps', label: 'Web Apps', image: '/images/work-3.png', description: 'A hotel booking web application built to provide users with a practical interface for discovering accommodation and exploring hotel booking workflows.', tech: ['React.js', 'Tailwind CSS', 'JavaScript ES6+', 'RESTful API'], demo: 'https://quickstay-tutorial.vercel.app/' },
+  { id: 'gpa', title: 'Student GPA Analyzer', subtitle: 'Academic Performance Analytics Tool', category: 'tools', label: 'Tools', image: '/images/work-4.png', description: 'A student-focused academic analytics application designed to help users calculate GPA/CGPA, analyse academic performance, and work with grade information through an accessible web interface.', tech: ['Python', 'Streamlit', 'Data Analysis', 'GPA/CGPA Logic'], demo: 'https://gpa-analyzer-siwes-project.streamlit.app/' },
+  { id: 'afrowear', title: 'Afrowear', subtitle: 'African Fashion E-Commerce Platform', category: 'fullstack', label: 'Full Stack', image: '/images/work-1.png', description: 'An African fashion e-commerce platform designed around product discovery, shopping cart functionality, checkout workflows, and a modern shopping experience. The project is currently under development and has not yet been deployed.', tech: ['React.js', 'Tailwind CSS', 'Node.js', 'Express.js', 'MongoDB', 'REST API'], demo: null },
+];
+
+const serviceDetails = {
+  frontend: { title: 'Frontend Development', body: 'I create fast, responsive, and accessible web interfaces using modern tools like React.js, Tailwind CSS, and Vanilla JavaScript.', points: ['Responsive layouts for desktop and mobile devices', 'Interactive user interfaces and components', 'Cross-browser compatibility', 'REST API integration'] },
+  uiux: { title: 'UI/UX Implementation', body: 'Bridging design concepts with full-stack code implementation, ensuring intuitive navigation and polished visual interfaces.', points: ['Consistent typography and visual systems', 'Responsive layouts', 'Interactive states and feedback', 'Accessible and user-friendly interfaces'] },
+  fullstack: { title: 'Full Stack Development', body: 'Developing complete web applications from frontend interfaces to backend services, APIs, databases, and authentication systems.', points: ['RESTful API development', 'MongoDB database integration', 'Authentication and application logic', 'Deployment and environment configuration'] },
 };
+
+const initialContact = { name: '', email: '', message: '', errors: {}, status: 'idle' };
+function contactReducer(state, action) {
+  switch (action.type) {
+    case 'field': return { ...state, [action.name]: action.value, errors: { ...state.errors, [action.name]: validateField(action.name, action.value) }, status: 'idle' };
+    case 'validate': return { ...state, errors: validateForm(state), status: 'idle' };
+    case 'status': return { ...state, status: action.value };
+    case 'reset': return initialContact;
+    default: return state;
+  }
+}
+function validateField(name, value) {
+  if (name === 'name' && !value.trim()) return 'Please enter your name.';
+  if (name === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Enter a valid email address.';
+  if (name === 'message' && value.trim().length < 10) return 'Please enter at least 10 characters.';
+  return '';
+}
+function validateForm(values) {
+  return { name: validateField('name', values.name), email: validateField('email', values.email), message: validateField('message', values.message) };
+}
+
+function SectionHeading({ eyebrow, title, description }) {
+  return <><p className="text-center mb-1 text-xs font-mono font-semibold uppercase tracking-widest text-amber-800 dark:text-amber-500">{eyebrow}</p><h2 className="text-center text-3xl sm:text-5xl font-serif text-zinc-900 dark:text-white">{title}</h2>{description && <p className="text-center max-w-2xl mx-auto mt-4 mb-10 font-serif text-zinc-600 dark:text-stone-400">{description}</p>}</>;
+}
+function IconArrow() { return <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0-7 7m7-7H3" /></svg>; }
+
+function App() {
+  const [dark, setDark] = useState(() => localStorage.theme === 'dark' || (!localStorage.theme && window.matchMedia('(prefers-color-scheme: dark)').matches));
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [filter, setFilter] = useState('all');
+  const [expanded, setExpanded] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [service, setService] = useState(null);
+  const [contact, dispatch] = useReducer(contactReducer, initialContact);
+  const [toast, setToast] = useState('');
+  const [repos, setRepos] = useState([]);
+  const [repoState, setRepoState] = useState('loading');
+  const [repoError, setRepoError] = useState('');
+
+  useEffect(() => { document.documentElement.classList.toggle('dark', dark); localStorage.theme = dark ? 'dark' : 'light'; }, [dark]);
+  useEffect(() => { document.body.style.overflow = menuOpen || selectedProject || service ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [menuOpen, selectedProject, service]);
+  useEffect(() => {
+    const handleKey = (event) => { if (event.key === 'Escape') { setMenuOpen(false); setSelectedProject(null); setService(null); } };
+    window.addEventListener('keydown', handleKey); return () => window.removeEventListener('keydown', handleKey);
+  }, []);
+
+  // Week 4: synchronize this UI with the external GitHub API. Abort the request on unmount.
+  const fetchRepos = useCallback(async (signal) => {
+    setRepoState('loading'); setRepoError('');
+    try {
+      const response = await fetch('https://api.github.com/users/ahashimbala/repos?sort=updated&per_page=4', { signal, headers: { Accept: 'application/vnd.github+json' } });
+      if (!response.ok) throw new Error(response.status === 403 ? 'GitHub API rate limit reached. Try again later.' : `GitHub returned ${response.status}.`);
+      const data = await response.json();
+      if (!Array.isArray(data)) throw new Error('Unexpected response from GitHub.');
+      setRepos(data); setRepoState(data.length ? 'success' : 'empty');
+    } catch (error) {
+      if (error.name === 'AbortError') return;
+      setRepoError(error.message || 'Unable to load repositories.'); setRepoState('error');
+    }
+  }, []);
+  useEffect(() => { const controller = new AbortController(); fetchRepos(controller.signal); return () => controller.abort(); }, [fetchRepos]);
+
+  const filteredProjects = useMemo(() => projects.filter((project) => filter === 'all' || project.category === filter), [filter]);
+  const visibleProjects = expanded ? filteredProjects : filteredProjects.slice(0, 3);
+  const notify = (message) => { setToast(message); window.setTimeout(() => setToast(''), 3500); };
+
+  async function submitContact(event) {
+    event.preventDefault(); dispatch({ type: 'validate' });
+    const errors = validateForm(contact);
+    if (Object.values(errors).some(Boolean)) return;
+    dispatch({ type: 'status', value: 'sending' });
+    const payload = new FormData(event.currentTarget);
+    payload.append('access_key', 'f5472e58-6b0b-48c0-b444-fe918b9f2215');
+    payload.append('subject', 'New Portfolio Inquiry - Abdullahi Hashim Bala');
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', { method: 'POST', body: payload });
+      const result = await response.json();
+      if (result.success) { dispatch({ type: 'reset' }); notify('Message sent. Thank you!'); }
+      else { dispatch({ type: 'status', value: 'error' }); notify(result.message || 'Submission issue. Please try again.'); }
+    } catch { dispatch({ type: 'status', value: 'error' }); notify('Please email ahashimbala01@gmail.com directly.'); }
+  }
+
+  const navLinks = [['Home', '#top'], ['About', '#about'], ['Services', '#services'], ['Projects', '#work'], ['Contact', '#contact']];
+  return <>
+    <header className="fixed top-0 left-0 z-40 w-full"><nav className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-3 sm:py-4 flex items-center justify-between glass-panel border-b border-zinc-200/80 dark:border-beige-800/80">
+      <a href="#top" className="flex flex-col items-center shrink-0"><img src="/images/logo.png" alt="Abdul logo" className="w-24 sm:w-28 object-contain dark:hidden"/><img src="/images/logo-dark.png" alt="Abdul logo" className="w-24 sm:w-28 object-contain hidden dark:block"/><span className="mt-1 text-[9px] font-mono text-zinc-500 dark:text-stone-400">Software Engineer</span></a>
+      <ul className="hidden md:flex items-center gap-1 lg:gap-2 rounded-full px-4 py-1.5 bg-zinc-100/80 dark:bg-beige-900/80 border border-zinc-200 dark:border-beige-800 font-serif text-sm font-medium shadow-inner">{navLinks.map(([label, href]) => <li key={label}><a href={href} className="px-3 py-1.5 rounded-full hover:text-amber-700 dark:hover:text-amber-400 transition-colors">{label}</a></li>)}</ul>
+      <div className="flex items-center gap-2"><button onClick={() => setDark(!dark)} aria-label="Toggle dark mode" className="p-2 rounded-lg bg-zinc-100 dark:bg-beige-900 border border-zinc-200 dark:border-beige-800 text-zinc-700 dark:text-stone-300">{dark ? '☀️' : '🌙'}</button><a href="#contact" className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900 text-white dark:bg-stone-100 dark:text-stone-900 text-sm hover:bg-amber-800 transition">Contact <IconArrow /></a><button onClick={() => setMenuOpen(true)} className="md:hidden p-2 rounded-lg border dark:border-beige-800" aria-label="Open navigation">☰</button></div>
+    </nav></header>
+    {menuOpen && <div className="fixed inset-0 z-50 md:hidden"><button aria-label="Close menu overlay" onClick={() => setMenuOpen(false)} className="absolute inset-0 bg-black/60"/><aside className="absolute right-0 top-0 bottom-0 w-[min(20rem,85vw)] bg-white dark:bg-beige-900 border-l dark:border-beige-800 p-6 shadow-xl"><div className="flex justify-between items-center"><img src="/images/logo.png" className="w-24 dark:hidden" alt="Logo"/><img src="/images/logo-dark.png" className="w-24 hidden dark:block" alt="Logo"/><button onClick={() => setMenuOpen(false)} className="text-2xl" aria-label="Close menu">×</button></div><ul className="flex flex-col gap-5 py-8 font-serif text-lg">{navLinks.map(([label, href]) => <li key={label}><a href={href} onClick={() => setMenuOpen(false)}>{label}</a></li>)}</ul></aside></div>}
+
+    <main>
+      <section id="top" className="relative w-[calc(100%-2rem)] sm:w-11/12 max-w-5xl mx-auto pt-32 sm:pt-36 lg:pt-40 pb-16 sm:pb-24 flex flex-col items-center text-center"><div className="absolute top-20 left-1/2 -translate-x-1/2 w-56 h-56 sm:w-72 sm:h-72 bg-amber-500/15 dark:bg-amber-600/10 rounded-full blur-3xl pointer-events-none animate-glow"/><div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border bg-zinc-100 dark:bg-beige-900 text-zinc-700 dark:text-stone-300 text-[10px] sm:text-xs mb-6"><span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"/>Available for Engineering Projects & Roles</div><div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full overflow-hidden border-2 shadow-xl mb-6 bg-zinc-100 dark:bg-beige-900"><img src="/images/profile-img.png" alt="Abdullahi Hashim Bala" className="w-full h-full object-cover object-top"/></div><h3 className="text-lg sm:text-2xl font-serif text-zinc-700 dark:text-stone-300 mb-2">Hi! I'm <strong className="text-zinc-900 dark:text-white">Abdullahi Hashim Bala</strong> 👋</h3><h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif leading-tight text-zinc-900 dark:text-white max-w-4xl tracking-tight mb-6">Full Stack Web Developer & Software Engineer</h1><p className="max-w-2xl mx-auto font-serif text-zinc-600 dark:text-stone-400 text-base sm:text-lg leading-relaxed mb-8">I am a full stack developer from Abuja, Nigeria. I am currently studying Software Engineering at Cosmopolitan University, creating high-performance, resilient web solutions.</p><div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto"><a href="#contact" className="w-full sm:w-auto justify-center px-8 py-3.5 rounded-full bg-zinc-900 text-white dark:bg-stone-100 dark:text-stone-900 font-serif flex items-center gap-2 hover:bg-amber-800 transition shadow-md">Contact Me <IconArrow/></a><a href="/images/my-cv.pdf" download className="w-full sm:w-auto justify-center px-8 py-3.5 rounded-full border bg-white dark:bg-beige-900 font-serif flex items-center gap-2">My Resume <span>↓</span></a></div><div className="mt-12 pt-8 border-t border-zinc-200 dark:border-beige-800 w-full max-w-3xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-center"><Stat value="3" label="Live Projects"/><Stat value="Cosmopolitan" label="Software Engineering"/><Stat value="Full Stack" label="MERN & Python Stack"/><Stat value="Abuja, NG" label="Location"/></div></section>
+
+      <section id="about" className="w-full px-5 sm:px-8 md:px-12 lg:px-[10%] py-16 border-t border-zinc-200 dark:border-beige-800"><SectionHeading eyebrow="Introduction" title="About Me"/><div className="flex flex-col lg:flex-row items-center lg:items-start gap-10 lg:gap-16"><div className="w-56 sm:w-64 lg:w-80 shrink-0"><img src="/images/user-picture.png" alt="Abdullahi Hashim Bala" className="w-full rounded-3xl object-cover border shadow-lg"/></div><div className="flex-1 min-w-0"><p className="mb-8 font-serif text-zinc-600 dark:text-stone-300 text-base sm:text-lg leading-relaxed">I'm a Software Engineer and Full-Stack Developer in the making, passionate about transforming ideas into fast, functional, and meaningful digital experiences. I specialise in modern web development and am continuously deepening my expertise across the frontend, backend, and MERN stack. Beyond writing code, I'm focused on building products, solving real-world problems, and creating opportunities through technology.</p><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"><InfoCard title="Languages" text="HTML, CSS, JavaScript, Python" secondTitle="Frameworks" secondText="React.js, Node.js, Express.js, Tailwind"/><InfoCard title="Education" text="B.Sc. Software Engineering" secondText="Cosmopolitan University, Nigeria · 2023–Present"/><InfoCard title="Projects" text="Practical projects across web development, agriculture technology, e-commerce, and academic analytics."/></div><h4 className="my-6 text-zinc-800 dark:text-stone-200 font-serif text-lg">Tools I Use Daily <span className="text-xs font-mono text-zinc-500">development ecosystem</span></h4><div className="flex gap-3 flex-wrap">{['VS Code','MongoDB','Git & GitHub','React.js','Node.js'].map((tool) => <span key={tool} className="px-3.5 py-2 border rounded-xl bg-white dark:bg-beige-900 text-xs font-mono">{tool}</span>)}</div></div></div></section>
+
+      <section id="services" className="w-full px-5 sm:px-8 md:px-12 lg:px-[10%] py-16 border-t border-zinc-200 dark:border-beige-800"><SectionHeading eyebrow="What I Offer" title="My Services" description="Specialized engineering solutions tailored to build scalable web platforms, high-converting interfaces, and robust server architectures."/><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{Object.entries(serviceDetails).map(([key, item]) => <article key={key} className="border rounded-2xl p-6 sm:p-8 bg-white dark:bg-beige-900 shadow-sm flex flex-col justify-between hover:border-amber-700/50 transition"><div><div className="w-12 h-12 rounded-xl bg-zinc-100 dark:bg-beige-800 text-amber-800 flex items-center justify-center mb-6">⌘</div><h3 className="text-xl my-3 font-semibold">{item.title}</h3><p className="text-sm text-zinc-600 dark:text-stone-400 leading-relaxed mb-6">{item.body}</p></div><button onClick={() => setService(item)} className="text-left inline-flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-500 hover:underline">Read more <IconArrow/></button></article>)}</div></section>
+
+      <section id="work" className="w-full px-5 sm:px-8 md:px-12 lg:px-[10%] py-16 border-t border-zinc-200 dark:border-beige-800"><SectionHeading eyebrow="My Portfolio" title="My Latest Work" description="Explore full-stack applications, interactive tools, and web systems built with modern technologies and practical problem-solving in mind."/><div className="flex justify-center gap-2 flex-wrap mb-10">{[['all','All Projects'],['fullstack','Full Stack'],['webapps','Web Apps'],['tools','Tools']].map(([key,label])=><button key={key} onClick={()=>{setFilter(key);setExpanded(false);}} className={`px-4 py-2 rounded-full text-xs font-mono font-medium transition ${filter===key?'bg-zinc-900 text-white dark:bg-stone-100 dark:text-stone-900':'bg-zinc-100 dark:bg-beige-900 text-zinc-600 dark:text-stone-400 hover:bg-zinc-200'}`}>{label}</button>)}</div><p className="text-center text-xs font-mono text-zinc-500 mb-5" aria-live="polite">Showing {visibleProjects.length} of {filteredProjects.length} projects</p><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">{visibleProjects.map(project=><button key={project.id} onClick={()=>setSelectedProject(project)} className="text-left overflow-hidden rounded-2xl relative border bg-white dark:bg-beige-900 group shadow-sm hover:border-amber-700/50 transition min-w-0"><div className="aspect-square w-full overflow-hidden bg-stone-900"><img src={project.image} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/></div><div className="bg-white/95 dark:bg-beige-900/95 backdrop-blur-md w-11/12 rounded-xl absolute bottom-3 left-1/2 -translate-x-1/2 py-3 px-3 sm:px-4 flex items-center justify-between gap-2 border shadow-md"><div className="min-w-0"><div className="flex flex-wrap gap-2 mb-0.5"><span className="text-[10px] font-mono text-amber-800 dark:text-amber-500 font-semibold uppercase">{project.label}</span><span className={`text-[9px] font-mono ${project.demo?'text-emerald-600':'text-amber-600'}`}>{project.demo?'● LIVE':'● IN DEVELOPMENT'}</span></div><h3 className="font-semibold text-zinc-900 dark:text-white text-base leading-tight">{project.title}</h3><p className="text-xs text-zinc-500 truncate">{project.subtitle}</p></div><span className="border rounded-full w-8 h-8 flex items-center justify-center shrink-0 group-hover:bg-amber-800 group-hover:text-white"><IconArrow/></span></div></button>)}</div>{filteredProjects.length>3&&<div className="text-center mt-12"><button onClick={()=>setExpanded(!expanded)} className="inline-flex items-center gap-2 border rounded-full py-3 px-8 bg-white dark:bg-beige-900 hover:bg-zinc-900 hover:text-white transition font-serif text-sm">{expanded?'Show Less Projects':'Show More Projects'} <span className={`transition-transform ${expanded?'rotate-180':''}`}>⌄</span></button></div>}
+        <div className="mt-16 pt-10 border-t border-zinc-200 dark:border-beige-800"><div className="flex flex-wrap justify-between items-end gap-3 mb-5"><div><p className="text-xs font-mono uppercase tracking-widest text-amber-800 dark:text-amber-500">Week 4 API feature</p><h3 className="text-xl sm:text-2xl font-serif">Recent GitHub Repositories</h3></div><a href="https://github.com/ahashimbala" target="_blank" rel="noreferrer" className="text-sm text-amber-800 dark:text-amber-500 underline">View GitHub profile</a></div><RepoFeed state={repoState} error={repoError} repos={repos} onRetry={()=>fetchRepos()}/></div>
+      </section>
+
+      <section id="contact" className="w-full px-5 sm:px-8 md:px-12 lg:px-[10%] py-16 border-t border-zinc-200 dark:border-beige-800"><SectionHeading eyebrow="Connect with me" title="Get in Touch" description="I'd love to hear from you! Whether you have a project idea, software inquiry, or role opportunity, drop a message below."/><form onSubmit={submitContact} noValidate className="max-w-2xl mx-auto bg-white dark:bg-beige-900 p-5 sm:p-10 rounded-3xl border shadow-sm"><div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-4"><FormField label="YOUR NAME" name="name" value={contact.name} error={contact.errors.name} onChange={(value)=>dispatch({type:'field',name:'name',value})} placeholder="John Doe"/><FormField label="YOUR EMAIL" name="email" type="email" value={contact.email} error={contact.errors.email} onChange={(value)=>dispatch({type:'field',name:'email',value})} placeholder="john@example.com"/></div><FormField label="YOUR MESSAGE" name="message" textarea value={contact.message} error={contact.errors.message} onChange={(value)=>dispatch({type:'field',name:'message',value})} placeholder="Tell me about your project or inquiry..."/><button disabled={contact.status==='sending'} type="submit" className="w-full mt-4 py-4 px-8 bg-zinc-900 text-white dark:bg-stone-100 dark:text-stone-900 rounded-xl hover:bg-amber-800 transition disabled:opacity-60">{contact.status==='sending'?'Sending Message…':'Send Message →'}</button><p className="text-xs text-zinc-500 mt-3" aria-live="polite">{contact.status==='error'?'Submission failed. Please try again or email me directly.':''}</p></form></section>
+    </main>
+    <footer className="mt-20 border-t border-zinc-200 dark:border-beige-800 bg-white dark:bg-beige-900"><div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 py-10"><div className="flex flex-col items-center text-center"><img src="/images/logo.png" alt="Logo" className="w-24 dark:hidden"/><img src="/images/logo-dark.png" alt="Logo" className="w-24 hidden dark:block"/><p className="mt-3 text-xs sm:text-sm text-zinc-500">Software Engineering @ Cosmopolitan University, Abuja</p></div><div className="mt-8 pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-4"><p className="text-xs sm:text-sm text-zinc-500">© 2026 Abdullahi Hashim Bala. All rights reserved.</p><div className="flex gap-5 text-xs sm:text-sm"><a href="mailto:ahashimbala01@gmail.com">Email</a><a href="https://github.com/ahashimbala" target="_blank" rel="noreferrer">GitHub</a><a href="https://instagram.com/abdul_h.b" target="_blank" rel="noreferrer">Instagram</a></div></div></div></footer>
+
+    {selectedProject && <Modal onClose={()=>setSelectedProject(null)}><p className="text-xs font-mono uppercase text-amber-800 dark:text-amber-500">{selectedProject.label}</p><h2 className="text-2xl font-serif my-2">{selectedProject.title} — {selectedProject.subtitle}</h2><img src={selectedProject.image} alt={selectedProject.title} className="w-full rounded-xl my-4"/><p className="text-zinc-600 dark:text-stone-300">{selectedProject.description}</p><div className="flex flex-wrap gap-2 mt-4">{selectedProject.tech.map(t=><span key={t} className="px-3 py-1 rounded-lg bg-zinc-100 dark:bg-beige-800 text-xs font-mono border">{t}</span>)}</div><div className="flex flex-wrap gap-3 mt-6">{selectedProject.demo&&<a href={selectedProject.demo} target="_blank" rel="noreferrer" className="px-4 py-2 rounded-full bg-zinc-900 text-white dark:bg-stone-100 dark:text-stone-900">Live Demo ↗</a>}<a href="https://github.com/ahashimbala" target="_blank" rel="noreferrer" className="px-4 py-2 rounded-full border">GitHub ↗</a></div></Modal>}
+    {service && <Modal onClose={()=>setService(null)}><h2 className="text-2xl font-serif mb-3">{service.title}</h2><p className="mb-4 text-zinc-600 dark:text-stone-300">{service.body}</p><h3 className="font-semibold mb-2">Key Details</h3><ul className="list-disc pl-5 space-y-1">{service.points.map(point=><li key={point}>{point}</li>)}</ul></Modal>}
+    {toast&&<div role="status" className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 max-w-[90vw] rounded-xl bg-zinc-900 text-white px-5 py-3 shadow-xl text-sm">{toast}</div>}
+  </>;
+}
+
+function Stat({value,label}) { return <div className="p-3 rounded-xl bg-white dark:bg-beige-900 border dark:border-beige-800"><div className="font-mono font-bold text-lg text-amber-800 dark:text-amber-500 break-words">{value}</div><div className="text-xs text-zinc-500 font-medium">{label}</div></div>; }
+function InfoCard({title,text,secondTitle,secondText}) { return <article className="border rounded-2xl p-6 bg-white dark:bg-beige-900 shadow-sm"><h3 className="my-1 font-semibold">{title}</h3><p className="text-zinc-500 dark:text-stone-400 text-xs sm:text-sm leading-relaxed mb-3">{text}</p>{secondTitle&&<><h3 className="my-1 font-semibold">{secondTitle}</h3><p className="text-zinc-500 dark:text-stone-400 text-xs sm:text-sm leading-relaxed">{secondText}</p></>}</article>; }
+function FormField({label,name,value,error,onChange,placeholder,type='text',textarea=false}) { const id=`contact-${name}`; return <div className={`${textarea?'mb-2':''}`}><label htmlFor={id} className="block text-xs font-mono text-zinc-500 mb-2">{label}</label>{textarea?<textarea id={id} name={name} rows="5" value={value} onChange={e=>onChange(e.target.value)} onBlur={()=>onChange(value)} placeholder={placeholder} className="w-full p-3.5 outline-none border rounded-xl bg-zinc-50 dark:bg-beige-950 text-sm focus:border-amber-700 resize-y"/>:<input id={id} name={name} type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} className="w-full p-3.5 outline-none border rounded-xl bg-zinc-50 dark:bg-beige-950 text-sm focus:border-amber-700"/>}{error&&<p className="text-red-600 text-xs mt-1" id={`${id}-error`}>{error}</p>}</div>; }
+function RepoFeed({state,error,repos,onRetry}) { if(state==='loading')return <p className="text-sm text-zinc-500" role="status">Loading repositories…</p>; if(state==='error')return <div className="border rounded-xl p-4 text-sm"><p className="text-red-600 mb-2">{error}</p><button onClick={onRetry} className="px-3 py-1.5 border rounded-full">Retry</button></div>; if(state==='empty')return <p className="text-sm text-zinc-500">No public repositories were returned.</p>; return <div className="grid sm:grid-cols-2 gap-3">{repos.map(repo=><article key={repo.id} className="border rounded-xl p-4 bg-white dark:bg-beige-900 min-w-0"><div className="flex justify-between gap-2"><a href={repo.html_url} target="_blank" rel="noreferrer" className="font-medium hover:text-amber-700 break-all">{repo.name} ↗</a><span className="text-xs text-zinc-500 shrink-0">★ {repo.stargazers_count}</span></div><p className="text-xs text-zinc-500 mt-2">{repo.description||'No description provided.'}</p><p className="text-xs font-mono text-amber-800 dark:text-amber-500 mt-3">{repo.language||'Language not specified'}</p></article>)}</div>; }
+function Modal({children,onClose}) { return <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm overflow-y-auto" onMouseDown={e=>e.target===e.currentTarget&&onClose()}><div className="relative w-full max-w-3xl bg-white dark:bg-beige-900 border rounded-2xl shadow-2xl p-5 sm:p-8 my-4 max-h-[94vh] overflow-y-auto"><button onClick={onClose} aria-label="Close modal" className="absolute top-3 right-3 text-2xl px-2">×</button>{children}</div></div>; }
 
 export default App;
